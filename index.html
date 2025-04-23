@@ -12,14 +12,27 @@
     .header h1 { font-size: 16px; margin: 0; flex-grow: 1; text-align: center; }
     .header .logo { width: 40px; height: 24px; object-fit: cover; }
     .header .user { font-size: 24px; display: flex; align-items: center; gap: 5px; }
-    .content { padding: 10px; padding-bottom: 60px; } /* Add padding for footer */
+    .content { padding: 10px; padding-bottom: 60px; }
     .card { background: white; border: 1px solid #DEE2E6; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
     .card p { margin: 5px 0; font-size: 16px; }
     .card p span { font-weight: bold; }
     .chart-container { width: 100%; height: 150px; margin-bottom: 5px; position: relative; }
-    .list-container { display: none; margin-bottom: 10px; }
+    .list-container { display: none; margin-bottom: 10px; position: relative; }
     .list-container ul { list-style: none; padding: 0; }
     .list-container li { padding: 8px; border-bottom: 1px solid #DEE2E6; font-size: 14px; }
+    .list-container .back-btn { 
+      background: #6C757D; 
+      color: white; 
+      padding: 4px 6px; 
+      border-radius: 5px; 
+      font-size: 10px; 
+      cursor: pointer; 
+      display: inline-block; 
+      margin: 2px 0; 
+      position: absolute; 
+      top: 0; 
+      right: 10px; 
+    }
     .map-container { width: 100%; height: 150px; }
     .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; justify-content: center; }
     .filter-bar label { font-size: 14px; font-weight: bold; color: #333; }
@@ -71,7 +84,7 @@
     }
     .screen { display: none; }
     .screen.active { display: block; }
-    /* Goals Section */
+    /* Project Highlights Section */
     .goals-section { margin-bottom: 15px; display: none; }
     .goals-section.active { display: block; }
     .goals-section h2 { font-size: 16px; color: #007BFF; margin-bottom: 8px; text-align: center; }
@@ -90,6 +103,14 @@
     }
     .goal-card:hover { transform: scale(1.05); }
     .goal-card i { font-size: 24px; color: #28A745; margin-bottom: 8px; }
+    .goal-card .alert-icon { 
+      position: absolute; 
+      top: 5px; 
+      right: 5px; 
+      color: #DC3545; 
+      font-size: 16px; 
+      cursor: pointer; 
+    }
     .goal-card h3 { font-size: 14px; margin: 8px 0; color: #333; }
     .goal-card .progress-circle { 
       width: 60px; 
@@ -128,10 +149,11 @@
       .goals-section h2 { font-size: 18px; }
       .goal-card i { font-size: 28px; }
       .goal-card h3 { font-size: 15px; }
+      .goal-card .alert-icon { font-size: 18px; }
       .goal-card .progress-circle { width: 70px; height: 70px; }
       .goal-card .progress-circle::before { font-size: 15px; width: 50px; height: 50px; }
       .goal-card p { font-size: 13px; }
-      .toggle-btn { font-size: 12px; padding: 5px 8px; bottom: -25px; }
+      .toggle-btn, .list-container .back-btn { font-size: 12px; padding: 5px 8px; bottom: -25px; }
     }
   </style>
 </head>
@@ -177,21 +199,106 @@
       </div>
       <div class="list-container" id="sector-list">
         <ul id="sectorList"></ul>
+        <button class="back-btn" onclick="toggleView('sector')">Back to Chart</button>
       </div>
       <div class="map-container" id="map"></div>
-      <!-- Goals Section -->
-      <div id="goals-paogz" class="goals-section">
-        <h2>PAOG-Z 5-Year Goals (2025-2030)</h2>
+      <!-- Project Highlights Section -->
+      <div id="highlights-all" class="goals-section">
+        <h2>Project Highlights Now</h2>
         <div class="goals-container">
-          <div class="goal-card" style="--progress: 65;">
+          <!-- PAOG-Z Highlights -->
+          <div class="goal-card" style="--progress: 65;" data-project-id="P1">
             <i class="fas fa-laptop"></i>
-            <h3>Digital Literacy</h3>
+            <h3>Katondo Digital Hub</h3>
             <div class="progress-circle" data-progress="65"></div>
-            <p>Train 10,000 youth<br>Progress: 6,500 youth trained</p>
+            <p>Train 10,000 youth<br>Progress: 6,500 trained</p>
           </div>
-          <div class="goal-card" style="--progress: 40;">
+          <div class="goal-card" style="--progress: 40;" data-project-id="P3">
             <i class="fas fa-briefcase"></i>
-            <h3>Youth Entrepreneurs</h3>
+            <i class="fas fa-exclamation-triangle alert-icon" onclick="showProjectDetails('P3')"></i>
+            <h3>Chibombo Mentorship</h3>
+            <div class="progress-circle" data-progress="40"></div>
+            <p>Support 5,000 entrepreneurs<br>Progress: 2,000 supported</p>
+          </div>
+          <div class="goal-card" style="--progress: 50;">
+            <i class="fas fa-users"></i>
+            <h3>Community Engagement</h3>
+            <div class="progress-circle" data-progress="50"></div>
+            <p>Engage 50 communities<br>Progress: 25 communities</p>
+          </div>
+          <!-- COMPACT Highlights -->
+          <div class="goal-card" style="--progress: 70;" data-project-id="L1">
+            <i class="fas fa-tint"></i>
+            <h3>Kanyama Borehole</h3>
+            <div class="progress-circle" data-progress="70"></div>
+            <p>Install 100 boreholes<br>Progress: 70 installed</p>
+          </div>
+          <div class="goal-card" style="--progress: 60;" data-project-id="L2">
+            <i class="fas fa-school"></i>
+            <h3>Kanyama School</h3>
+            <div class="progress-circle" data-progress="60"></div>
+            <p>Build 50 schools<br>Progress: 30 built</p>
+          </div>
+          <div class="goal-card" style="--progress: 62.5;" data-project-id="L3">
+            <i class="fas fa-hospital"></i>
+            <h3>Kanyama Clinic</h3>
+            <div class="progress-circle" data-progress="62.5"></div>
+            <p>Upgrade 40 clinics<br>Progress: 25 upgraded</p>
+          </div>
+          <!-- KUPULA Highlights -->
+          <div class="goal-card" style="--progress: 62.5;" data-project-id="KUP1">
+            <i class="fas fa-solar-panel"></i>
+            <h3>Kapiri Solar Irrigation</h3>
+            <div class="progress-circle" data-progress="62.5"></div>
+            <p>Install 80 systems<br>Progress: 50 installed</p>
+          </div>
+          <div class="goal-card" style="--progress: 58.3;" data-project-id="KUP2">
+            <i class="fas fa-leaf"></i>
+            <h3>Lukanga Organic Farming</h3>
+            <div class="progress-circle" data-progress="58.3"></div>
+            <p>Establish 60 hubs<br>Progress: 35 established</p>
+          </div>
+          <div class="goal-card" style="--progress: 40;" data-project-id="KUP3">
+            <i class="fas fa-fish"></i>
+            <i class="fas fa-exclamation-triangle alert-icon" onclick="showProjectDetails('KUP3')"></i>
+            <h3>Chibombo Fish Farming</h3>
+            <div class="progress-circle" data-progress="40"></div>
+            <p>Support 50 projects<br>Progress: 20 supported</p>
+          </div>
+          <!-- Other Projects Highlights -->
+          <div class="goal-card" style="--progress: 50;" data-project-id="O3">
+            <i class="fas fa-building"></i>
+            <h3>Kanyama Library</h3>
+            <div class="progress-circle" data-progress="50"></div>
+            <p>Build 30 centers<br>Progress: 15 built</p>
+          </div>
+          <div class="goal-card" style="--progress: 62.5;" data-project-id="O1">
+            <i class="fas fa-store"></i>
+            <h3>Livingstone Market</h3>
+            <div class="progress-circle" data-progress="62.5"></div>
+            <p>Establish 40 markets<br>Progress: 25 established</p>
+          </div>
+          <div class="goal-card" style="--progress: 50;" data-project-id="O4">
+            <i class="fas fa-futbol"></i>
+            <h3>Ndola Sports Facility</h3>
+            <div class="progress-circle" data-progress="50"></div>
+            <p>Develop 20 facilities<br>Progress: 10 developed</p>
+          </div>
+        </div>
+      </div>
+      <div id="highlights-paogz" class="goals-section">
+        <h2>Project Highlights Now</h2>
+        <div class="goals-container">
+          <div class="goal-card" style="--progress: 65;" data-project-id="P1">
+            <i class="fas fa-laptop"></i>
+            <h3>Katondo Digital Hub</h3>
+            <div class="progress-circle" data-progress="65"></div>
+            <p>Train 10,000 youth<br>Progress: 6,500 trained</p>
+          </div>
+          <div class="goal-card" style="--progress: 40;" data-project-id="P3">
+            <i class="fas fa-briefcase"></i>
+            <i class="fas fa-exclamation-triangle alert-icon" onclick="showProjectDetails('P3')"></i>
+            <h3>Chibombo Mentorship</h3>
             <div class="progress-circle" data-progress="40"></div>
             <p>Support 5,000 entrepreneurs<br>Progress: 2,000 supported</p>
           </div>
@@ -203,70 +310,71 @@
           </div>
         </div>
       </div>
-      <div id="goals-compact" class="goals-section">
-        <h2>COMPACT 5-Year Goals (2025-2030)</h2>
+      <div id="highlights-compact" class="goals-section">
+        <h2>Project Highlights Now</h2>
         <div class="goals-container">
-          <div class="goal-card" style="--progress: 70;">
+          <div class="goal-card" style="--progress: 70;" data-project-id="L1">
             <i class="fas fa-tint"></i>
-            <h3>Borehole Access</h3>
+            <h3>Kanyama Borehole</h3>
             <div class="progress-circle" data-progress="70"></div>
             <p>Install 100 boreholes<br>Progress: 70 installed</p>
           </div>
-          <div class="goal-card" style="--progress: 60;">
+          <div class="goal-card" style="--progress: 60;" data-project-id="L2">
             <i class="fas fa-school"></i>
-            <h3>School Construction</h3>
+            <h3>Kanyama School</h3>
             <div class="progress-circle" data-progress="60"></div>
             <p>Build 50 schools<br>Progress: 30 built</p>
           </div>
-          <div class="goal-card" style="--progress: 62.5;">
+          <div class="goal-card" style="--progress: 62.5;" data-project-id="L3">
             <i class="fas fa-hospital"></i>
-            <h3>Clinic Upgrades</h3>
+            <h3>Kanyama Clinic</h3>
             <div class="progress-circle" data-progress="62.5"></div>
             <p>Upgrade 40 clinics<br>Progress: 25 upgraded</p>
           </div>
         </div>
       </div>
-      <div id="goals-kupula" class="goals-section">
-        <h2>KUPULA 5-Year Goals (2025-2030)</h2>
+      <div id="highlights-kupula" class="goals-section">
+        <h2>Project Highlights Now</h2>
         <div class="goals-container">
-          <div class="goal-card" style="--progress: 62.5;">
+          <div class="goal-card" style="--progress: 62.5;" data-project-id="KUP1">
             <i class="fas fa-solar-panel"></i>
-            <h3>Solar Irrigation</h3>
+            <h3>Kapiri Solar Irrigation</h3>
             <div class="progress-circle" data-progress="62.5"></div>
             <p>Install 80 systems<br>Progress: 50 installed</p>
           </div>
-          <div class="goal-card" style="--progress: 58.3;">
+          <div class="goal-card" style="--progress: 58.3;" data-project-id="KUP2">
             <i class="fas fa-leaf"></i>
-            <h3>Organic Farming</h3>
+            <h3>Lukanga Organic Farming</h3>
             <div class="progress-circle" data-progress="58.3"></div>
             <p>Establish 60 hubs<br>Progress: 35 established</p>
           </div>
-          <div class="goal-card" style="--progress: 40;">
+          <div class="goal-card" style="--progress: 40;" data-project-id="KUP3">
             <i class="fas fa-fish"></i>
-            <h3>Fish Farming</h3>
+            <i class="fas fa-exclamation-triangle alert-icon" onclick="showProjectDetails('KUP3')"></i>
+            <h3>Chibombo Fish Farming</h3>
             <div class="progress-circle" data-progress="40"></div>
             <p>Support 50 projects<br>Progress: 20 supported</p>
           </div>
         </div>
       </div>
-      <div id="goals-other" class="goals-section">
-        <h2>Other Projects 5-Year Goals (2025-2030)</h2>
+      <div id="highlights-other" class="goals-section">
+        <h2>Project Highlights Now</h2>
         <div class="goals-container">
-          <div class="goal-card" style="--progress: 50;">
+          <div class="goal-card" style="--progress: 50;" data-project-id="O3">
             <i class="fas fa-building"></i>
-            <h3>Community Centers</h3>
+            <h3>Kanyama Library</h3>
             <div class="progress-circle" data-progress="50"></div>
             <p>Build 30 centers<br>Progress: 15 built</p>
           </div>
-          <div class="goal-card" style="--progress: 62.5;">
+          <div class="goal-card" style="--progress: 62.5;" data-project-id="O1">
             <i class="fas fa-store"></i>
-            <h3>Local Markets</h3>
+            <h3>Livingstone Market</h3>
             <div class="progress-circle" data-progress="62.5"></div>
             <p>Establish 40 markets<br>Progress: 25 established</p>
           </div>
-          <div class="goal-card" style="--progress: 50;">
+          <div class="goal-card" style="--progress: 50;" data-project-id="O4">
             <i class="fas fa-futbol"></i>
-            <h3>Sports Facilities</h3>
+            <h3>Ndola Sports Facility</h3>
             <div class="progress-circle" data-progress="50"></div>
             <p>Develop 20 facilities<br>Progress: 10 developed</p>
           </div>
@@ -364,6 +472,7 @@
       </div>
       <div class="list-container" id="status-list">
         <ul id="statusList"></ul>
+        <button class="back-btn" onclick="toggleView('status')">Back to Chart</button>
       </div>
       <table class="table">
         <thead>
@@ -410,6 +519,7 @@
       </div>
       <div class="list-container" id="trend-list">
         <ul id="trendList"></ul>
+        <button class="back-btn" onclick="toggleView('trend')">Back to Chart</button>
       </div>
       <div class="alerts">
         <div class="alert">Overdue: School ZMW 200K <button onclick="resolveAlert()">Resolve</button></div>
@@ -653,10 +763,8 @@
       const footer = document.querySelector('.footer');
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       if (scrollTop > lastScrollTop) {
-        // Scrolling down
         footer.classList.add('hidden');
       } else {
-        // Scrolling up
         footer.classList.remove('hidden');
       }
       lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
@@ -667,20 +775,19 @@
       const projectType = document.getElementById('overview-project-type').value;
       let filteredProjects = projectType === 'all' ? projects : projects.filter(p => p.projectType === projectType);
 
-      const goalsIdMap = {
-        'PAOG-Z': 'goals-paogz',
-        'COMPACT': 'goals-compact',
-        'KUPULA': 'goals-kupula',
-        'Other Projects': 'goals-other'
+      const highlightsIdMap = {
+        'all': 'highlights-all',
+        'PAOG-Z': 'highlights-paogz',
+        'COMPACT': 'highlights-compact',
+        'KUPULA': 'highlights-kupula',
+        'Other Projects': 'highlights-other'
       };
 
       document.querySelectorAll('.goals-section').forEach(section => section.classList.remove('active'));
-      if (projectType !== 'all') {
-        const goalsSectionId = goalsIdMap[projectType];
-        const goalsSection = document.getElementById(goalsSectionId);
-        if (goalsSection) {
-          goalsSection.classList.add('active');
-        }
+      const highlightsSectionId = highlightsIdMap[projectType];
+      const highlightsSection = document.getElementById(highlightsSectionId);
+      if (highlightsSection) {
+        highlightsSection.classList.add('active');
       }
 
       const sectorCounts = {
@@ -935,11 +1042,39 @@
       if (chart.style.display !== 'none') {
         chart.style.display = 'none';
         list.style.display = 'block';
-        btn.textContent = 'Show Chart';
+        btn.textContent = 'Show List'; // Ensure button text doesn't change
       } else {
         chart.style.display = 'block';
         list.style.display = 'none';
         btn.textContent = 'Show List';
+      }
+    }
+
+    function showProjectDetails(projectId) {
+      const project = projects.find(p => p.id === projectId);
+      if (project) {
+        // Navigate to Project Status dashboard
+        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+        document.querySelector('#project-status').classList.add('active');
+        document.querySelectorAll('.footer a').forEach(a => a.classList.remove('active'));
+        document.querySelector('.footer a[href="#project-status"]').classList.add('active');
+
+        // Update filters to show only this project
+        document.getElementById('level').value = 'national';
+        document.getElementById('province').value = 'all';
+        document.getElementById('district').value = 'all';
+        document.getElementById('sector').value = project.sector;
+        document.getElementById('status').value = project.status;
+        document.getElementById('project-type').value = project.projectType;
+        document.getElementById('search').value = project.name;
+
+        // Update the table and chart
+        const filtered = [project];
+        renderProjects(filtered);
+        updateStatusChart(filtered);
+
+        // Scroll to the top of the Project Status dashboard
+        document.querySelector('#project-status').scrollIntoView({ behavior: 'smooth' });
       }
     }
 
