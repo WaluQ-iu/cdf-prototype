@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CDF Management Prototype</title>
+  <title>Zambia CDF Monitoring Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
@@ -13,16 +13,16 @@
     .header .logo, .header .user { font-size: 24px; }
     .content { padding: 10px; }
     .card { background: white; border: 1px solid #DEE2E6; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-    .card p { margin: 5px 0; font-size: 18px; }
+    .card p { margin: 5px 0; font-size: 16px; }
     .card p span { font-weight: bold; }
     .chart-container { width: 100%; height: 150px; margin-bottom: 10px; }
     .list-container { display: none; margin-bottom: 10px; }
     .list-container ul { list-style: none; padding: 0; }
     .list-container li { padding: 8px; border-bottom: 1px solid #DEE2E6; font-size: 14px; }
     .map-container { width: 100%; height: 150px; }
-    .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; align-items: center; }
-    .filter-bar select, .filter-bar input { padding: 8px; font-size: 14px; border: 1px solid #DEE2E6; border-radius: 5px; }
-    .filter-bar button { background: #007BFF; color: white; padding: 8px; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; justify-content: center; }
+    .filter-bar select, .filter-bar input { padding: 6px; font-size: 14px; border: 1px solid #DEE2E6; border-radius: 5px; width: 100%; max-width: 150px; }
+    .filter-bar button { background: #007BFF; color: white; padding: 6px; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; width: 100%; max-width: 100px; }
     .table { width: 100%; border-collapse: collapse; }
     .table th, .table td { border: 1px solid #DEE2E6; padding: 8px; font-size: 12px; text-align: left; }
     .table th { background: #007BFF; color: white; }
@@ -44,11 +44,66 @@
     .toggle-btn { background: #6C757D; color: white; padding: 5px 8px; border-radius: 5px; font-size: 12px; cursor: pointer; margin: 5px 0; }
     .screen { display: none; }
     .screen.active { display: block; }
+    /* Goals Section */
+    .goals-section { margin-bottom: 15px; display: none; }
+    .goals-section.active { display: block; }
+    .goals-section h2 { font-size: 16px; color: #007BFF; margin-bottom: 8px; text-align: center; }
+    .goals-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; position: relative; }
+    .goal-card { 
+      background: white; 
+      border: 1px solid #DEE2E6; 
+      padding: 10px; 
+      border-radius: 8px; 
+      width: 100%; 
+      max-width: 220px; 
+      text-align: center; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      transition: transform 0.3s ease; 
+      position: relative; 
+    }
+    .goal-card:hover { transform: scale(1.05); }
+    .goal-card i { font-size: 24px; color: #28A745; margin-bottom: 8px; }
+    .goal-card h3 { font-size: 14px; margin: 8px 0; color: #333; }
+    .goal-card .progress-circle { 
+      width: 60px; 
+      height: 60px; 
+      margin: 0 auto 8px; 
+      position: relative; 
+      background: conic-gradient(#28A745 0% calc(var(--progress) * 3.6deg), #DEE2E6 calc(var(--progress) * 3.6deg) 100%); 
+      border-radius: 50%; 
+    }
+    .goal-card .progress-circle::before { 
+      content: attr(data-progress) '%'; 
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      font-size: 14px; 
+      font-weight: bold; 
+      color: #333; 
+      background: white; 
+      width: 45px; 
+      height: 45px; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
+    .goal-card p { font-size: 12px; color: #666; }
     @media (min-width: 768px) {
       .content { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .chart-container, .list-container, .map-container { height: 200px; }
       .card { grid-column: span 1; }
       .footer { flex-wrap: nowrap; }
+      .filter-bar select, .filter-bar input { max-width: 180px; }
+      .filter-bar button { max-width: 120px; }
+      .goal-card { max-width: 200px; }
+      .goals-section h2 { font-size: 18px; }
+      .goal-card i { font-size: 28px; }
+      .goal-card h3 { font-size: 15px; }
+      .goal-card .progress-circle { width: 70px; height: 70px; }
+      .goal-card .progress-circle::before { font-size: 15px; width: 50px; height: 50px; }
+      .goal-card p { font-size: 13px; }
     }
   </style>
 </head>
@@ -57,7 +112,7 @@
   <div id="overview" class="screen active">
     <div class="header">
       <i class="fas fa-map logo"></i>
-      <h1>Lusaka CDF Overview</h1>
+      <h1>Zambia CDF Overview</h1>
       <div class="user">
         <i class="fas fa-user-circle"></i>
         <select onchange="changeLanguage(this.value)">
@@ -69,11 +124,22 @@
       </div>
     </div>
     <div class="content">
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <select id="overview-project-type" onchange="updateOverview()">
+          <option value="all">All Projects</option>
+          <option value="PAOG-Z">PAOG-Z</option>
+          <option value="COMPACT">COMPACT</option>
+          <option value="KUPULA">KUPULA</option>
+          <option value="Other Projects">Other Projects</option>
+        </select>
+      </div>
+      <!-- Project Summary -->
       <div class="card">
-        <p><i class="fas fa-house-user"></i> Total Projects: <span id="totalProjects">25</span></p>
-        <p><i class="fas fa-money-bill"></i> Funds Allocated: <span>ZMW 36.1M</span></p>
-        <p><i class="fas fa-money-bill"></i> Funds Disbursed: <span>ZMW 20.5M</span></p>
-        <p><i class="fas fa-balance-scale"></i> Funds Remaining: <span>ZMW 15.6M</span></p>
+        <p><i class="fas fa-house-user"></i> Total Projects: <span id="totalProjects">0</span></p>
+        <p><i class="fas fa-money-bill"></i> Funds Allocated: <span id="fundsAllocated">ZMW 0</span></p>
+        <p><i class="fas fa-money-bill"></i> Funds Disbursed: <span id="fundsDisbursed">ZMW 0</span></p>
+        <p><i class="fas fa-balance-scale"></i> Funds Remaining: <span id="fundsRemaining">ZMW 0</span></p>
       </div>
       <button class="toggle-btn" onclick="toggleView('sector')">Show List</button>
       <div class="chart-container" id="sector-chart">
@@ -84,6 +150,99 @@
         <ul id="sectorList"></ul>
       </div>
       <div class="map-container" id="map"></div>
+      <!-- Goals Section (Moved to Bottom) -->
+      <div id="goals-paogz" class="goals-section">
+        <h2>PAOG-Z 5-Year Goals (2025-2030)</h2>
+        <div class="goals-container">
+          <div class="goal-card" style="--progress: 65;">
+            <i class="fas fa-laptop"></i>
+            <h3>Digital Literacy</h3>
+            <div class="progress-circle" data-progress="65"></div>
+            <p>Train 10,000 youth<br>Progress: 6,500 youth trained</p>
+          </div>
+          <div class="goal-card" style="--progress: 40;">
+            <i class="fas fa-briefcase"></i>
+            <h3>Youth Entrepreneurs</h3>
+            <div class="progress-circle" data-progress="40"></div>
+            <p>Support 5,000 entrepreneurs<br>Progress: 2,000 supported</p>
+          </div>
+          <div class="goal-card" style="--progress: 50;">
+            <i class="fas fa-users"></i>
+            <h3>Community Engagement</h3>
+            <div class="progress-circle" data-progress="50"></div>
+            <p>Engage 50 communities<br>Progress: 25 communities</p>
+          </div>
+        </div>
+      </div>
+      <div id="goals-compact" class="goals-section">
+        <h2>COMPACT 5-Year Goals (2025-2030)</h2>
+        <div class="goals-container">
+          <div class="goal-card" style="--progress: 70;">
+            <i class="fas fa-tint"></i>
+            <h3>Borehole Access</h3>
+            <div class="progress-circle" data-progress="70"></div>
+            <p>Install 100 boreholes<br>Progress: 70 installed</p>
+          </div>
+          <div class="goal-card" style="--progress: 60;">
+            <i class="fas fa-school"></i>
+            <h3>School Construction</h3>
+            <div class="progress-circle" data-progress="60"></div>
+            <p>Build 50 schools<br>Progress: 30 built</p>
+          </div>
+          <div class="goal-card" style="--progress: 62.5;">
+            <i class="fas fa-hospital"></i>
+            <h3>Clinic Upgrades</h3>
+            <div class="progress-circle" data-progress="62.5"></div>
+            <p>Upgrade 40 clinics<br>Progress: 25 upgraded</p>
+          </div>
+        </div>
+      </div>
+      <div id="goals-kupula" class="goals-section">
+        <h2>KUPULA 5-Year Goals (2025-2030)</h2>
+        <div class="goals-container">
+          <div class="goal-card" style="--progress: 62.5;">
+            <i class="fas fa-solar-panel"></i>
+            <h3>Solar Irrigation</h3>
+            <div class="progress-circle" data-progress="62.5"></div>
+            <p>Install 80 systems<br>Progress: 50 installed</p>
+          </div>
+          <div class="goal-card" style="--progress: 58.3;">
+            <i class="fas fa-leaf"></i>
+            <h3>Organic Farming</h3>
+            <div class="progress-circle" data-progress="58.3"></div>
+            <p>Establish 60 hubs<br>Progress: 35 established</p>
+          </div>
+          <div class="goal-card" style="--progress: 40;">
+            <i class="fas fa-fish"></i>
+            <h3>Fish Farming</h3>
+            <div class="progress-circle" data-progress="40"></div>
+            <p>Support 50 projects<br>Progress: 20 supported</p>
+          </div>
+        </div>
+      </div>
+      <div id="goals-other" class="goals-section">
+        <h2>Other Projects 5-Year Goals (2025-2030)</h2>
+        <div class="goals-container">
+          <div class="goal-card" style="--progress: 50;">
+            <i class="fas fa-building"></i>
+            <h3>Community Centers</h3>
+            <div class="progress-circle" data-progress="50"></div>
+            <p>Build 30 centers<br>Progress: 15 built</p>
+          </div>
+          <div class="goal-card" style="--progress: 62.5;">
+            <i class="fas fa-store"></i>
+            <h3>Local Markets</h3>
+            <div class="progress-circle" data-progress="62.5"></div>
+            <p>Establish 40 markets<br>Progress: 25 established</p>
+          </div>
+          <div class="goal-card" style="--progress: 50;">
+            <i class="fas fa-futbol"></i>
+            <h3>Sports Facilities</h3>
+            <div class="progress-circle" data-progress="50"></div>
+            <p>Develop 20 facilities<br>Progress: 10 developed</p>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="footer">
       <a href="#overview" class="active"><i class="fas fa-home"></i> Overview</a>
@@ -111,14 +270,37 @@
           <option value="constituency">Constituency</option>
           <option value="ward">Ward</option>
         </select>
-        <select id="constituency" onchange="updateWards()">
-          <option value="all">All Constituencies</option>
+        <select id="province" onchange="filterProjects()" style="display: none;">
+          <option value="all">All Provinces</option>
+          <option value="lusaka">Lusaka</option>
+          <option value="central">Central</option>
+          <option value="copperbelt">Copperbelt</option>
+          <option value="southern">Southern</option>
+          <option value="western">Western</option>
+          <option value="muchinga">Muchinga</option>
+          <option value="eastern">Eastern</option>
+        </select>
+        <select id="district" onchange="filterProjects()" style="display: none;">
+          <option value="all">All Districts</option>
           <option value="lusaka">Lusaka</option>
           <option value="chilanga">Chilanga</option>
           <option value="kafue">Kafue</option>
+          <option value="kabwe central">Kabwe Central</option>
+          <option value="chibombo">Chibombo</option>
+          <option value="kapiri mposhi">Kapiri Mposhi</option>
+          <option value="ndola central">Ndola Central</option>
+          <option value="nkana">Nkana</option>
+          <option value="livingstone">Livingstone</option>
+          <option value="mongu">Mongu</option>
+          <option value="shangombo">Shangombo</option>
+          <option value="mpika">Mpika</option>
+          <option value="chipata">Chipata</option>
         </select>
-        <select id="ward" onchange="filterProjects()">
-          <option value="all">All Wards</option>
+        <select id="constituency" onchange="filterProjects()" style="display: none;">
+          <option value="in-dev">(In-dev)</option>
+        </select>
+        <select id="ward" onchange="filterProjects()" style="display: none;">
+          <option value="in-dev">(In-dev)</option>
         </select>
         <select id="sector" onchange="filterProjects()">
           <option value="all">All Sectors</option>
@@ -126,12 +308,21 @@
           <option value="water">Water</option>
           <option value="skills">Skills</option>
           <option value="health">Health</option>
+          <option value="agriculture">Agriculture</option>
+          <option value="community">Community</option>
         </select>
         <select id="status" onchange="filterProjects()">
           <option value="all">All Status</option>
           <option value="ongoing">Ongoing</option>
           <option value="completed">Completed</option>
           <option value="delayed">Delayed</option>
+        </select>
+        <select id="project-type" onchange="filterProjects()">
+          <option value="all">All Projects</option>
+          <option value="PAOG-Z">PAOG-Z</option>
+          <option value="COMPACT">COMPACT</option>
+          <option value="KUPULA">KUPULA</option>
+          <option value="Other Projects">Other Projects</option>
         </select>
         <input id="search" type="text" placeholder="Search Project">
         <button onclick="filterProjects()">Apply</button>
@@ -149,8 +340,9 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Constituency</th>
-            <th>Ward</th>
+            <th>Project Type</th>
+            <th>Province</th>
+            <th>District</th>
             <th>Sector</th>
             <th>Progress</th>
             <th>Funds</th>
@@ -178,9 +370,9 @@
     </div>
     <div class="content">
       <div class="card">
-        <p><i class="fas fa-money-bill"></i> Funds Allocated: <span>ZMW 36.1M</span></p>
+        <p><i class="fas fa-money-bill"></i> Funds Allocated: <span id="financialFundsAllocated">ZMW 0</span></p>
         <canvas id="gaugeChart" height="100"></canvas>
-        <p style="text-align: center; font-size: 18px;">ZMW 20.5M / 36.1M</p>
+        <p style="text-align: center; font-size: 18px;" id="gaugeLabel">ZMW 0 / 0</p>
       </div>
       <button class="toggle-btn" onclick="toggleView('trend')">Show List</button>
       <div class="chart-container" id="trend-chart">
@@ -188,12 +380,7 @@
         <button onclick="exportChart('trendChart')">Export PNG</button>
       </div>
       <div class="list-container" id="trend-list">
-        <ul>
-          <li>Jan: ZMW 5M</li>
-          <li>Feb: ZMW 10M</li>
-          <li>Mar: ZMW 15M</li>
-          <li>Apr: ZMW 20.5M</li>
-        </ul>
+        <ul id="trendList"></ul>
       </div>
       <div class="alerts">
         <div class="alert">Overdue: School ZMW 200K <button onclick="resolveAlert()">Resolve</button></div>
@@ -236,11 +423,12 @@
     <div class="content">
       <div class="form-section">
         <label>Project Type</label>
-        <select required>
+        <select id="proposalProjectType" required>
           <option value="">Select</option>
-          <option value="school">School</option>
-          <option value="borehole">Borehole</option>
-          <option value="skills">Skills Training</option>
+          <option value="PAOG-Z">PAOG-Z</option>
+          <option value="COMPACT">COMPACT</option>
+          <option value="KUPULA">KUPULA</option>
+          <option value="Other Projects">Other Projects</option>
         </select>
       </div>
       <div class="form-section">
@@ -290,10 +478,8 @@
     <div class="content">
       <div class="form-section">
         <label>Project</label>
-        <select required>
+        <select id="feedbackProject" required>
           <option value="all">All Projects</option>
-          <option value="borehole">Kanyama Borehole</option>
-          <option value="school">Lusaka School</option>
         </select>
       </div>
       <div class="form-section">
@@ -339,36 +525,86 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Dummy Data
+    // Dummy Data with Province and District
     const projects = [
-      // Lusaka Constituency
-      { id: 'L1', name: 'Kanyama Borehole', constituency: 'lusaka', ward: 'kanyama', sector: 'water', progress: 75, funds: 400000, status: 'ongoing', lat: -15.3875, lng: 28.3228 },
-      { id: 'L2', name: 'Kanyama School', constituency: 'lusaka', ward: 'kanyama', sector: 'education', progress: 100, funds: 600000, status: 'completed', lat: -15.3876, lng: 28.3229 },
-      { id: 'L3', name: 'Kanyama Clinic', constituency: 'lusaka', ward: 'kanyama', sector: 'health', progress: 30, funds: 300000, status: 'ongoing', lat: -15.3877, lng: 28.3230 },
-      { id: 'L4', name: 'Kanyama Skills Training', constituency: 'lusaka', ward: 'kanyama', sector: 'skills', progress: 10, funds: 200000, status: 'delayed', lat: -15.3878, lng: 28.3231 },
-      { id: 'L5', name: 'Materos Borehole', constituency: 'lusaka', ward: 'materos', sector: 'water', progress: 90, funds: 450000, status: 'ongoing', lat: -15.3975, lng: 28.3328 },
-      { id: 'L6', name: 'Materos School', constituency: 'lusaka', ward: 'materos', sector: 'education', progress: 50, funds: 500000, status: 'ongoing', lat: -15.3976, lng: 28.3329 },
-      { id: 'L7', name: 'Materos Clinic', constituency: 'lusaka', ward: 'materos', sector: 'health', progress: 20, funds: 250000, status: 'delayed', lat: -15.3977, lng: 28.3330 },
-      { id: 'L8', name: 'Materos Skills Training', constituency: 'lusaka', ward: 'materos', sector: 'skills', progress: 85, funds: 300000, status: 'ongoing', lat: -15.3978, lng: 28.3331 },
-      // Chilanga Constituency
-      { id: 'C1', name: 'Chilanga Borehole', constituency: 'chilanga', ward: 'chilanga central', sector: 'water', progress: 60, funds: 380000, status: 'ongoing', lat: -15.6075, lng: 28.2828 },
-      { id: 'C2', name: 'Chilanga School', constituency: 'chilanga', ward: 'chilanga central', sector: 'education', progress: 95, funds: 550000, status: 'completed', lat: -15.6076, lng: 28.2829 },
-      { id: 'C3', name: 'Chilanga Clinic', constituency: 'chilanga', ward: 'chilanga central', sector: 'health', progress: 40, funds: 320000, status: 'ongoing', lat: -15.6077, lng: 28.2830 },
-      { id: 'C4', name: 'Chilanga Skills Training', constituency: 'chilanga', ward: 'chilanga central', sector: 'skills', progress: 5, funds: 150000, status: 'delayed', lat: -15.6078, lng: 28.2831 },
-      { id: 'C5', name: 'Mapepe Borehole', constituency: 'chilanga', ward: 'mapepe', sector: 'water', progress: 70, funds: 400000, status: 'ongoing', lat: -15.6175, lng: 28.2928 },
-      { id: 'C6', name: 'Mapepe School', constituency: 'chilanga', ward: 'mapepe', sector: 'education', progress: 25, funds: 450000, status: 'ongoing', lat: -15.6176, lng: 28.2929 },
-      { id: 'C7', name: 'Mapepe Clinic', constituency: 'chilanga', ward: 'mapepe', sector: 'health', progress: 80, funds: 350000, status: 'ongoing', lat: -15.6177, lng: 28.2930 },
-      { id: 'C8', name: 'Mapepe Skills Training', constituency: 'chilanga', ward: 'mapepe', sector: 'skills', progress: 15, funds: 180000, status: 'delayed', lat: -15.6178, lng: 28.2931 },
-      // Kafue Constituency
-      { id: 'K1', name: 'Kafue Borehole', constituency: 'kafue', ward: 'kafue urban', sector: 'water', progress: 85, funds: 420000, status: 'ongoing', lat: -15.7675, lng: 28.1828 },
-      { id: 'K2', name: 'Kafue School', constituency: 'kafue', ward: 'kafue urban', sector: 'education', progress: 100, funds: 600000, status: 'completed', lat: -15.7676, lng: 28.1829 },
-      { id: 'K3', name: 'Kafue Clinic', constituency: 'kafue', ward: 'kafue urban', sector: 'health', progress: 55, funds: 340000, status: 'ongoing', lat: -15.7677, lng: 28.1830 },
-      { id: 'K4', name: 'Kafue Skills Training', constituency: 'kafue', ward: 'kafue urban', sector: 'skills', progress: 30, funds: 200000, status: 'ongoing', lat: -15.7678, lng: 28.1831 },
-      { id: 'K5', name: 'Shikoswe Borehole', constituency: 'kafue', ward: 'shikoswe', sector: 'water', progress: 45, funds: 390000, status: 'ongoing', lat: -15.7775, lng: 28.1928 },
-      { id: 'K6', name: 'Shikoswe School', constituency: 'kafue', ward: 'shikoswe', sector: 'education', progress: 90, funds: 580000, status: 'completed', lat: -15.7776, lng: 28.1929 },
-      { id: 'K7', name: 'Shikoswe Clinic', constituency: 'kafue', ward: 'shikoswe', sector: 'health', progress: 10, funds: 280000, status: 'delayed', lat: -15.7777, lng: 28.1930 },
-      { id: 'K8', name: 'Shikoswe Skills Training', constituency: 'kafue', ward: 'shikoswe', sector: 'skills', progress: 65, funds: 250000, status: 'ongoing', lat: -15.7778, lng: 28.1931 }
+      // COMPACT Projects
+      { projectType: 'COMPACT', id: 'L1', name: 'Kanyama Borehole', province: 'lusaka', district: 'lusaka', sector: 'water', progress: 75, funds: 400000, status: 'ongoing', lat: -15.3875, lng: 28.3228 },
+      { projectType: 'COMPACT', id: 'L2', name: 'Kanyama School', province: 'lusaka', district: 'lusaka', sector: 'education', progress: 100, funds: 600000, status: 'completed', lat: -15.3876, lng: 28.3229 },
+      { projectType: 'COMPACT', id: 'L3', name: 'Kanyama Clinic', province: 'lusaka', district: 'lusaka', sector: 'health', progress: 30, funds: 300000, status: 'ongoing', lat: -15.3877, lng: 28.3230 },
+      { projectType: 'COMPACT', id: 'L4', name: 'Kanyama Skills Training', province: 'lusaka', district: 'lusaka', sector: 'skills', progress: 10, funds: 200000, status: 'delayed', lat: -15.3878, lng: 28.3231 },
+      { projectType: 'COMPACT', id: 'L5', name: 'Materos Borehole', province: 'lusaka', district: 'lusaka', sector: 'water', progress: 90, funds: 450000, status: 'ongoing', lat: -15.3975, lng: 28.3328 },
+      { projectType: 'COMPACT', id: 'L6', name: 'Materos School', province: 'lusaka', district: 'lusaka', sector: 'education', progress: 50, funds: 500000, status: 'ongoing', lat: -15.3976, lng: 28.3329 },
+      { projectType: 'COMPACT', id: 'L7', name: 'Materos Clinic', province: 'lusaka', district: 'lusaka', sector: 'health', progress: 20, funds: 250000, status: 'delayed', lat: -15.3977, lng: 28.3330 },
+      { projectType: 'COMPACT', id: 'L8', name: 'Materos Skills Training', province: 'lusaka', district: 'lusaka', sector: 'skills', progress: 85, funds: 300000, status: 'ongoing', lat: -15.3978, lng: 28.3331 },
+      { projectType: 'COMPACT', id: 'C1', name: 'Chilanga Borehole', province: 'lusaka', district: 'chilanga', sector: 'water', progress: 60, funds: 380000, status: 'ongoing', lat: -15.6075, lng: 28.2828 },
+      {هنگ: 'COMPACT', id: 'C2', name: 'Chilanga School', province: 'lusaka', district: 'chilanga', sector: 'education', progress: 95, funds: 550000, status: 'completed', lat: -15.6076, lng: 28.2829 },
+      { projectType: 'COMPACT', id: 'C3', name: 'Chilanga Clinic', province: 'lusaka', district: 'chilanga', sector: 'health', progress: 40, funds: 320000, status: 'ongoing', lat: -15.6077, lng: 28.2830 },
+      { projectType: 'COMPACT', id: 'C4', name: 'Chilanga Skills Training', province: 'lusaka', district: 'chilanga', sector: 'skills', progress: 5, funds: 150000, status: 'delayed', lat: -15.6078, lng: 28.2831 },
+      { projectType: 'COMPACT', id: 'C5', name: 'Mapepe Borehole', province: 'lusaka', district: 'chilanga', sector: 'water', progress: 70, funds: 400000, status: 'ongoing', lat: -15.6175, lng: 28.2928 },
+      { projectType: 'COMPACT', id: 'C6', name: 'Mapepe School', province: 'lusaka', district: 'chilanga', sector: 'education', progress: 25, funds: 450000, status: 'ongoing', lat: -15.6176, lng: 28.2929 },
+      { projectType: 'COMPACT', id: 'C7', name: 'Mapepe Clinic', province: 'lusaka', district: 'chilanga', sector: 'health', progress: 80, funds: 350000, status: 'ongoing', lat: -15.6177, lng: 28.2930 },
+      { projectType: 'COMPACT', id: 'C8', name: 'Mapepe Skills Training', province: 'lusaka', district: 'chilanga', sector: 'skills', progress: 15, funds: 180000, status: 'delayed', lat: -15.6178, lng: 28.2931 },
+      { projectType: 'COMPACT', id: 'K1', name: 'Kafue Borehole', province: 'lusaka', district: 'kafue', sector: 'water', progress: 85, funds: 420000, status: 'ongoing', lat: -15.7675, lng: 28.1828 },
+      { projectType: 'COMPACT', id: 'K2', name: 'Kafue School', province: 'lusaka', district: 'kafue', sector: 'education', progress: 100, funds: 600000, status: 'completed', lat: -15.7676, lng: 28.1829 },
+      { projectType: 'COMPACT', id: 'K3', name: 'Kafue Clinic', province: 'lusaka', district: 'kafue', sector: 'health', progress: 55, funds: 340000, status: 'ongoing', lat: -15.7677, lng: 28.1830 },
+      { projectType: 'COMPACT', id: 'K4', name: 'Kafue Skills Training', province: 'lusaka', district: 'kafue', sector: 'skills', progress: 30, funds: 200000, status: 'ongoing', lat: -15.7678, lng: 28.1831 },
+      { projectType: 'COMPACT', id: 'K5', name: 'Shikoswe Borehole', province: 'lusaka', district: 'kafue', sector: 'water', progress: 45, funds: 390000, status: 'ongoing', lat: -15.7775, lng: 28.1928 },
+      { projectType: 'COMPACT', id: 'K6', name: 'Shikoswe School', province: 'lusaka', district: 'kafue', sector: 'education', progress: 90, funds: 580000, status: 'completed', lat: -15.7776, lng: 28.1929 },
+      { projectType: 'COMPACT', id: 'K7', name: 'Shikoswe Clinic', province: 'lusaka', district: 'kafue', sector: 'health', progress: 10, funds: 280000, status: 'delayed', lat: -15.7777, lng: 28.1930 },
+      { projectType: 'COMPACT', id: 'K8', name: 'Shikoswe Skills Training', province: 'lusaka', district: 'kafue', sector: 'skills', progress: 65, funds: 250000, status: 'ongoing', lat: -15.7778, lng: 28.1931 },
+      { projectType: 'COMPACT', id: 'M1', name: 'Mongu Borehole', province: 'western', district: 'mongu', sector: 'water', progress: 60, funds: 410000, status: 'ongoing', lat: -15.2484, lng: 23.1274 },
+      { projectType: 'COMPACT', id: 'CH1', name: 'Chipata School Renovation', province: 'eastern', district: 'chipata', sector: 'education', progress: 70, funds: 480000, status: 'ongoing', lat: -13.6333, lng: 32.6500 },
+      // PAOG-Z Projects
+      { projectType: 'PAOG-Z', id: 'P1', name: 'Katondo Digital Hub', province: 'central', district: 'kabwe central', sector: 'skills', progress: 80, funds: 500000, status: 'ongoing', lat: -14.4400, lng: 28.4500 },
+      { projectType: 'PAOG-Z', id: 'P2', name: 'Mukobeko Youth Campaign', province: 'central', district: 'kabwe central', sector: 'education', progress: 60, funds: 300000, status: 'ongoing', lat: -14.4500, lng: 28.4600 },
+      { projectType: 'PAOG-Z', id: 'P3', name: 'Chibombo Mentorship Program', province: 'central', district: 'chibombo', sector: 'skills', progress: 40, funds: 450000, status: 'delayed', lat: -14.6500, lng: 28.0700 },
+      { projectType: 'PAOG-Z', id: 'P4', name: 'Mungule Digital Literacy', province: 'central', district: 'chibombo', sector: 'education', progress: 70, funds: 400000, status: 'ongoing', lat: -14.6600, lng: 28.0800 },
+      { projectType: 'PAOG-Z', id: 'P5', name: 'Ndeke Youth Empowerment', province: 'copperbelt', district: 'ndola central', sector: 'skills', progress: 55, funds: 350000, status: 'ongoing', lat: -12.9600, lng: 28.6400 },
+      { projectType: 'PAOG-Z', id: 'P6', name: 'Chipulukusu Skills Training', province: 'copperbelt', district: 'ndola central', sector: 'skills', progress: 65, funds: 380000, status: 'ongoing', lat: -12.9800, lng: 28.6600 },
+      { projectType: 'PAOG-Z', id: 'P7', name: 'Nkana East Digital Hub', province: 'copperbelt', district: 'nkana', sector: 'skills', progress: 90, funds: 520000, status: 'completed', lat: -12.8000, lng: 28.2100 },
+      { projectType: 'PAOG-Z', id: 'P8', name: 'Nkana West Youth Workshop', province: 'copperbelt', district: 'nkana', sector: 'education', progress: 45, funds: 320000, status: 'ongoing', lat: -12.8100, lng: 28.2200 },
+      // KUPULA Projects
+      { projectType: 'KUPULA', id: 'KUP1', name: 'Kapiri Solar Irrigation', province: 'central', district: 'kapiri mposhi', sector: 'agriculture', progress: 70, funds: 600000, status: 'ongoing', lat: -13.9700, lng: 28.6700 },
+      { projectType: 'KUPULA', id: 'KUP2', name: 'Lukanga Organic Farming', province: 'central', district: 'kapiri mposhi', sector: 'agriculture', progress: 50, funds: 450000, status: 'ongoing', lat: -13.9800, lng: 28.6800 },
+      { projectType: 'KUPULA', id: 'KUP3', name: 'Chibombo Fish Farming', province: 'central', district: 'chibombo', sector: 'agriculture', progress: 30, funds: 400000, status: 'delayed', lat: -14.6501, lng: 28.0701 },
+      { projectType: 'KUPULA', id: 'KUP4', name: 'Kafue Urban Farming', province: 'lusaka', district: 'kafue', sector: 'agriculture', progress: 85, funds: 500000, status: 'ongoing', lat: -15.7679, lng: 28.1832 },
+      { projectType: 'KUPULA', id: 'S1', name: 'Shangombo Fish Farming', province: 'western', district: 'shangombo', sector: 'agriculture', progress: 45, funds: 380000, status: 'ongoing', lat: -16.3167, lng: 22.0667 },
+      // Other Projects
+      { projectType: 'Other Projects', id: 'O1', name: 'Livingstone Market', province: 'southern', district: 'livingstone', sector: 'community', progress: 60, funds: 550000, status: 'ongoing', lat: -17.8500, lng: 25.8600 },
+      { projectType: 'Other Projects', id: 'O2', name: 'Dambwa Community Center', province: 'southern', district: 'livingstone', sector: 'community', progress: 80, funds: 480000, status: 'ongoing', lat: -17.8600, lng: 25.8700 },
+      { projectType: 'Other Projects', id: 'O3', name: 'Kanyama Library', province: 'lusaka', district: 'lusaka', sector: 'community', progress: 40, funds: 350000, status: 'ongoing', lat: -15.3879, lng: 28.3232 },
+      { projectType: 'Other Projects', id: 'O4', name: 'Ndola Sports Facility', province: 'copperbelt', district: 'ndola central', sector: 'community', progress: 65, funds: 420000, status: 'ongoing', lat: -12.9601, lng: 28.6401 },
+      { projectType: 'Other Projects', id: 'M2', name: 'Mongu Community Library', province: 'western', district: 'mongu', sector: 'community', progress: 55, funds: 390000, status: 'ongoing', lat: -15.2485, lng: 23.1275 },
+      { projectType: 'Other Projects', id: 'MP1', name: 'Mpika Sports Complex', province: 'muchinga', district: 'mpika', sector: 'community', progress: 50, funds: 400000, status: 'ongoing', lat: -11.8333, lng: 31.4500 }
     ];
+
+    // Financial Trend Data
+    const financialTrend = {
+      'PAOG-Z': [
+        { month: 'Jan', disbursed: 1.5 },
+        { month: 'Feb', disbursed: 2.0 },
+        { month: 'Mar', disbursed: 2.5 },
+        { month: 'Apr', disbursed: 3.2 }
+      ],
+      'COMPACT': [
+        { month: 'Jan', disbursed: 5.0 },
+        { month: 'Feb', disbursed: 10.0 },
+        { month: 'Mar', disbursed: 15.0 },
+        { month: 'Apr', disbursed: 20.5 }
+      ],
+      'KUPULA': [
+        { month: 'Jan', disbursed: 1.0 },
+        { month: 'Feb', disbursed: 1.5 },
+        { month: 'Mar', disbursed: 2.0 },
+        { month: 'Apr', disbursed: 2.5 }
+      ],
+      'Other Projects': [
+        { month: 'Jan', disbursed: 0.8 },
+        { month: 'Feb', disbursed: 1.2 },
+        { month: 'Mar', disbursed: 1.8 },
+        { month: 'Apr', disbursed: 2.2 }
+      ]
+    };
 
     // Navigation
     document.querySelectorAll('.footer a').forEach(link => {
@@ -378,45 +614,89 @@
         document.querySelector(link.getAttribute('href')).classList.add('active');
         document.querySelectorAll('.footer a').forEach(a => a.classList.remove('active'));
         link.classList.add('active');
+        if (link.getAttribute('href') === '#project-status') {
+          filterProjects();
+        } else if (link.getAttribute('href') === '#financial') {
+          updateFinancialDashboard();
+        }
       });
     });
 
     // Overview Chart
     function updateOverview() {
-      const sectorCounts = {
-        education: 0, water: 0, skills: 0, health: 0
+      const projectType = document.getElementById('overview-project-type').value;
+      let filteredProjects = projectType === 'all' ? projects : projects.filter(p => p.projectType === projectType);
+
+      // Map projectType to the correct goals section ID
+      const goalsIdMap = {
+        'PAOG-Z': 'goals-paogz',
+        'COMPACT': 'goals-compact',
+        'KUPULA': 'goals-kupula',
+        'Other Projects': 'goals-other'
       };
-      projects.forEach(p => sectorCounts[p.sector] += p.funds / 36100000 * 100);
-      const sectorData = Object.values(sectorCounts);
-      const sectorLabels = ['Education', 'Water', 'Skills', 'Health'];
+
+      // Show/Hide Goals Section based on Project Type
+      document.querySelectorAll('.goals-section').forEach(section => section.classList.remove('active'));
+      if (projectType !== 'all') {
+        const goalsSectionId = goalsIdMap[projectType];
+        const goalsSection = document.getElementById(goalsSectionId);
+        if (goalsSection) {
+          goalsSection.classList.add('active');
+        }
+      }
+
+      const sectorCounts = {
+        education: 0, water: 0, skills: 0, health: 0, agriculture: 0, community: 0
+      };
+      let totalFunds = 0;
+      filteredProjects.forEach(p => {
+        sectorCounts[p.sector] += p.funds;
+        totalFunds += p.funds;
+      });
+      const sectorData = Object.values(sectorCounts).map(val => (val / totalFunds * 100) || 0);
+      const sectorLabels = ['Education', 'Water', 'Skills', 'Health', 'Agriculture', 'Community'];
       sectorChart.data.datasets[0].data = sectorData;
       sectorChart.update();
       document.getElementById('sectorList').innerHTML = sectorLabels.map((label, i) => 
-        `<li>${label}: ${sectorData[i].toFixed(1)}% (ZMW ${(sectorData[i] * 361000).toFixed(0)})</li>`
+        `<li>${label}: ${sectorData[i].toFixed(1)}% (ZMW ${(sectorData[i] * totalFunds / 100).toLocaleString()})</li>`
       ).join('');
-      document.getElementById('totalProjects').textContent = projects.length;
+
+      const fundsAllocated = filteredProjects.reduce((sum, p) => sum + p.funds, 0);
+      const fundsDisbursed = fundsAllocated * 0.7; // Simulate 70% disbursement
+      const fundsRemaining = fundsAllocated - fundsDisbursed;
+      document.getElementById('totalProjects').textContent = filteredProjects.length;
+      document.getElementById('fundsAllocated').textContent = `ZMW ${fundsAllocated.toLocaleString()}`;
+      document.getElementById('fundsDisbursed').textContent = `ZMW ${fundsDisbursed.toLocaleString()}`;
+      document.getElementById('fundsRemaining').textContent = `ZMW ${fundsRemaining.toLocaleString()}`;
+
+      // Update Map
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) map.removeLayer(layer);
+      });
+      filteredProjects.forEach(p => {
+        L.marker([p.lat, p.lng]).addTo(map).bindPopup(`${p.name} (${p.projectType}) - ${p.status}`);
+      });
+      const bounds = filteredProjects.map(p => [p.lat, p.lng]);
+      if (bounds.length) map.fitBounds(bounds);
     }
     const sectorChart = new Chart(document.getElementById('sectorChart'), {
       type: 'pie',
       data: {
-        labels: ['Education', 'Water', 'Skills', 'Health'],
+        labels: ['Education', 'Water', 'Skills', 'Health', 'Agriculture', 'Community'],
         datasets: [{
-          data: [0, 0, 0, 0],
-          backgroundColor: ['#007BFF', '#28A745', '#FD7E14', '#DC3545']
+          data: [0, 0, 0, 0, 0, 0],
+          backgroundColor: ['#007BFF', '#28A745', '#FD7E14', '#DC3545', '#6C757D', '#17A2B8']
         }]
       },
       options: { responsive: true, maintainAspectRatio: false }
     });
 
     // Map
-    const map = L.map('map').setView([-15.3875, 28.3228], 10);
+    const map = L.map('map').setView([-15.4167, 28.2833], 6); // Center of Zambia
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
-    projects.forEach(p => {
-      L.marker([p.lat, p.lng]).addTo(map).bindPopup(`${p.name} - ${p.status}`);
-    });
 
     // Project Status Chart
     function updateStatusChart(filteredProjects) {
@@ -443,27 +723,54 @@
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Financial Gauge
+    // Financial Gauge and Trend
+    function updateFinancialDashboard() {
+      const projectType = document.getElementById('overview-project-type').value;
+      let filteredProjects = projectType === 'all' ? projects : projects.filter(p => p.projectType === projectType);
+
+      const totalFunds = filteredProjects.reduce((sum, p) => sum + p.funds, 0);
+      const disbursedFunds = totalFunds * 0.7; // Simulate 70% disbursement
+      gaugeChart.data.datasets[0].data = [disbursedFunds, totalFunds - disbursedFunds];
+      gaugeChart.update();
+      document.getElementById('financialFundsAllocated').textContent = `ZMW ${totalFunds.toLocaleString()}`;
+      document.getElementById('gaugeLabel').textContent = `ZMW ${disbursedFunds.toLocaleString()} / ${totalFunds.toLocaleString()}`;
+
+      const trendData = [];
+      const allMonths = ['Jan', 'Feb', 'Mar', 'Apr'];
+      allMonths.forEach(month => {
+        let totalDisbursed = 0;
+        ['PAOG-Z', 'COMPACT', 'KUPULA', 'Other Projects'].forEach(type => {
+          if (projectType === 'all' || projectType === type) {
+            const monthData = financialTrend[type].find(m => m.month === month);
+            if (monthData) totalDisbursed += monthData.disbursed;
+          }
+        });
+        trendData.push(totalDisbursed);
+      });
+      trendChart.data.datasets[0].data = trendData;
+      trendChart.update();
+      document.getElementById('trendList').innerHTML = allMonths.map((month, i) => 
+        `<li>${month}: ZMW ${trendData[i].toFixed(1)}M</li>`
+      ).join('');
+    }
     const gaugeChart = new Chart(document.getElementById('gaugeChart'), {
       type: 'doughnut',
       data: {
         datasets: [{
-          data: [20.5, 15.6],
+          data: [0, 0],
           backgroundColor: ['#28A745', '#DEE2E6'],
           borderWidth: 0
         }]
       },
       options: { rotation: -90, circumference: 180, cutout: '80%', responsive: true }
     });
-
-    // Financial Trend
     const trendChart = new Chart(document.getElementById('trendChart'), {
       type: 'line',
       data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr'],
         datasets: [{
           label: 'Disbursed (ZMW)',
-          data: [5, 10, 15, 20.5],
+          data: [0, 0, 0, 0],
           borderColor: '#28A745',
           fill: false
         }]
@@ -499,22 +806,36 @@
     // Filter and Search
     function filterProjects() {
       const level = document.getElementById('level').value;
-      const constituency = document.getElementById('constituency').value;
-      const ward = document.getElementById('ward').value;
+      const province = document.getElementById('province').value;
+      const district = document.getElementById('district').value;
       const sector = document.getElementById('sector').value;
       const status = document.getElementById('status').value;
+      const projectType = document.getElementById('project-type').value;
+
       let filtered = projects;
-      if (level === 'constituency' && constituency !== 'all') filtered = filtered.filter(p => p.constituency === constituency);
-      if (level === 'ward' && ward !== 'all') filtered = filtered.filter(p => p.ward === ward);
-      if (sector !== 'all') filtered = filtered.filter(p => p.sector === sector);
-      if (status !== 'all') filtered = filtered.filter(p => p.status === status);
+      if (level === 'province' && province !== 'all') {
+        filtered = filtered.filter(p => p.province === province);
+      }
+      if (level === 'district' && district !== 'all') {
+        filtered = filtered.filter(p => p.district === district);
+      }
+      if (sector !== 'all') {
+        filtered = filtered.filter(p => p.sector === sector);
+      }
+      if (status !== 'all') {
+        filtered = filtered.filter(p => p.status === status);
+      }
+      if (projectType !== 'all') {
+        filtered = filtered.filter(p => p.projectType === projectType);
+      }
+
       renderProjects(filtered);
       updateStatusChart(filtered);
     }
 
     function searchProjects() {
       const query = document.getElementById('search').value.toLowerCase();
-      const filtered = query ? projects.filter(p => p.name.toLowerCase().includes(query)) : projects;
+      const filtered = projects.filter(p => p.name.toLowerCase().includes(query));
       renderProjects(filtered);
       updateStatusChart(filtered);
     }
@@ -523,8 +844,9 @@
       document.getElementById('projectTable').innerHTML = filteredProjects.map(p => `
         <tr>
           <td>${p.name}</td>
-          <td>${p.constituency.charAt(0).toUpperCase() + p.constituency.slice(1)}</td>
-          <td>${p.ward.charAt(0).toUpperCase() + p.ward.slice(1)}</td>
+          <td>${p.projectType}</td>
+          <td>${p.province.charAt(0).toUpperCase() + p.province.slice(1)}</td>
+          <td>${p.district.charAt(0).toUpperCase() + p.district.slice(1)}</td>
           <td>${p.sector.charAt(0).toUpperCase() + p.sector.slice(1)}</td>
           <td><div class="progress-bar"><div style="width: ${p.progress}%; background: ${
             p.status === 'completed' ? '#28A745' : p.status === 'ongoing' ? '#FFC107' : '#DC3545'
@@ -539,31 +861,43 @@
 
     function updateFilters() {
       const level = document.getElementById('level').value;
+      const provinceSelect = document.getElementById('province');
+      const districtSelect = document.getElementById('district');
       const constituencySelect = document.getElementById('constituency');
       const wardSelect = document.getElementById('ward');
-      if (level === 'national' || level === 'province' || level === 'district') {
-        constituencySelect.value = 'all';
-        wardSelect.innerHTML = '<option value="all">All Wards</option>';
+
+      // Hide all location-specific filters by default
+      provinceSelect.style.display = 'none';
+      districtSelect.style.display = 'none';
+      constituencySelect.style.display = 'none';
+      wardSelect.style.display = 'none';
+
+      // Reset values to 'all' when changing levels
+      provinceSelect.value = 'all';
+      districtSelect.value = 'all';
+      constituencySelect.value = 'in-dev';
+      wardSelect.value = 'in-dev';
+
+      // Show the appropriate filter based on the selected level
+      if (level === 'province') {
+        provinceSelect.style.display = 'block';
+      } else if (level === 'district') {
+        districtSelect.style.display = 'block';
       } else if (level === 'constituency') {
-        wardSelect.innerHTML = '<option value="all">All Wards</option>';
+        constituencySelect.style.display = 'block';
       } else if (level === 'ward') {
-        updateWards();
+        wardSelect.style.display = 'block';
       }
+
+      filterProjects();
     }
 
-    function updateWards() {
-      const constituency = document.getElementById('constituency').value;
-      const wardSelect = document.getElementById('ward');
-      const wards = {
-        lusaka: ['kanyama', 'materos'],
-        chilanga: ['chilanga central', 'mapepe'],
-        kafue: ['kafue urban', 'shikoswe']
-      };
-      wardSelect.innerHTML = '<option value="all">All Wards</option>' + 
-        (constituency === 'all' ? '' : wards[constituency].map(w => 
-          `<option value="${w}">${w.charAt(0).toUpperCase() + w.slice(1)}</option>`
-        ).join(''));
-      filterProjects();
+    function updateProjectDropdowns() {
+      const feedbackProjectSelect = document.getElementById('feedbackProject');
+      feedbackProjectSelect.innerHTML = '<option value="all">All Projects</option>' + 
+        projects.map(p => 
+          `<option value="${p.id}">${p.name} (${p.projectType})</option>`
+        ).join('');
     }
 
     // Toggle Chart/List
@@ -610,9 +944,9 @@
 
     // Initialize
     updateOverview();
-    renderProjects(projects);
-    updateStatusChart(projects);
-    updateWards();
+    updateFilters();
+    updateProjectDropdowns();
+    filterProjects();
   </script>
 </body>
 </html>
