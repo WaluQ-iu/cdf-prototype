@@ -10,17 +10,19 @@
     body { margin: 0; font-family: Arial, sans-serif; background: #F8F9FA; }
     .header { background: #007BFF; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
     .header h1 { font-size: 16px; margin: 0; flex-grow: 1; text-align: center; }
-    .header .logo, .header .user { font-size: 24px; }
-    .content { padding: 10px; }
+    .header .logo { width: 40px; height: 24px; object-fit: cover; }
+    .header .user { font-size: 24px; display: flex; align-items: center; gap: 5px; }
+    .content { padding: 10px; padding-bottom: 60px; } /* Add padding for footer */
     .card { background: white; border: 1px solid #DEE2E6; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
     .card p { margin: 5px 0; font-size: 16px; }
     .card p span { font-weight: bold; }
-    .chart-container { width: 100%; height: 150px; margin-bottom: 10px; }
+    .chart-container { width: 100%; height: 150px; margin-bottom: 5px; position: relative; }
     .list-container { display: none; margin-bottom: 10px; }
     .list-container ul { list-style: none; padding: 0; }
     .list-container li { padding: 8px; border-bottom: 1px solid #DEE2E6; font-size: 14px; }
     .map-container { width: 100%; height: 150px; }
     .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; justify-content: center; }
+    .filter-bar label { font-size: 14px; font-weight: bold; color: #333; }
     .filter-bar select, .filter-bar input { padding: 6px; font-size: 14px; border: 1px solid #DEE2E6; border-radius: 5px; width: 100%; max-width: 150px; }
     .filter-bar button { background: #007BFF; color: white; padding: 6px; border: none; border-radius: 5px; font-size: 14px; cursor: pointer; width: 100%; max-width: 100px; }
     .table { width: 100%; border-collapse: collapse; }
@@ -36,12 +38,37 @@
     .form-section input, .form-section select, .form-section textarea { width: 100%; padding: 8px; font-size: 16px; border: 1px solid #DEE2E6; border-radius: 5px; }
     .form-section button { background: #28A745; color: white; padding: 10px; font-size: 16px; border: none; border-radius: 5px; width: 100%; }
     .form-section button:disabled { background: #6C757D; }
-    .footer { background: #F8F9FA; padding: 10px; display: flex; justify-content: space-around; border-top: 1px solid #DEE2E6; flex-wrap: wrap; }
+    .footer { 
+      background: #F8F9FA; 
+      padding: 10px; 
+      display: flex; 
+      justify-content: space-around; 
+      border-top: 1px solid #DEE2E6; 
+      flex-wrap: wrap; 
+      position: fixed; 
+      bottom: 0; 
+      width: 100%; 
+      transition: transform 0.3s ease; 
+      z-index: 1000; 
+    }
+    .footer.hidden { transform: translateY(100%); }
     .footer a { color: #007BFF; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; margin: 5px; }
     .footer a i { font-size: 24px; margin-bottom: 5px; }
     .footer a.active { color: #28A745; }
     .sync-btn { background: #28A745; color: white; padding: 5px; border-radius: 3px; font-size: 14px; margin: 5px; }
-    .toggle-btn { background: #6C757D; color: white; padding: 5px 8px; border-radius: 5px; font-size: 12px; cursor: pointer; margin: 5px 0; }
+    .toggle-btn { 
+      background: #6C757D; 
+      color: white; 
+      padding: 4px 6px; 
+      border-radius: 5px; 
+      font-size: 10px; 
+      cursor: pointer; 
+      display: inline-block; 
+      margin: 2px 0; 
+      position: absolute; 
+      bottom: -20px; 
+      right: 10px; 
+    }
     .screen { display: none; }
     .screen.active { display: block; }
     /* Goals Section */
@@ -104,6 +131,7 @@
       .goal-card .progress-circle { width: 70px; height: 70px; }
       .goal-card .progress-circle::before { font-size: 15px; width: 50px; height: 50px; }
       .goal-card p { font-size: 13px; }
+      .toggle-btn { font-size: 12px; padding: 5px 8px; bottom: -25px; }
     }
   </style>
 </head>
@@ -111,7 +139,7 @@
   <!-- Overview Dashboard -->
   <div id="overview" class="screen active">
     <div class="header">
-      <i class="fas fa-map logo"></i>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Zambia.svg/320px-Flag_of_Zambia.svg.png" alt="Zambia Flag" class="logo">
       <h1>Zambia CDF Overview</h1>
       <div class="user">
         <i class="fas fa-user-circle"></i>
@@ -126,6 +154,7 @@
     <div class="content">
       <!-- Filter Bar -->
       <div class="filter-bar">
+        <label>Filter By:</label>
         <select id="overview-project-type" onchange="updateOverview()">
           <option value="all">All Projects</option>
           <option value="PAOG-Z">PAOG-Z</option>
@@ -141,16 +170,16 @@
         <p><i class="fas fa-money-bill"></i> Funds Disbursed: <span id="fundsDisbursed">ZMW 0</span></p>
         <p><i class="fas fa-balance-scale"></i> Funds Remaining: <span id="fundsRemaining">ZMW 0</span></p>
       </div>
-      <button class="toggle-btn" onclick="toggleView('sector')">Show List</button>
       <div class="chart-container" id="sector-chart">
         <canvas id="sectorChart"></canvas>
         <button onclick="exportChart('sectorChart')">Export PNG</button>
+        <button class="toggle-btn" onclick="toggleView('sector')">Show List</button>
       </div>
       <div class="list-container" id="sector-list">
         <ul id="sectorList"></ul>
       </div>
       <div class="map-container" id="map"></div>
-      <!-- Goals Section (Moved to Bottom) -->
+      <!-- Goals Section -->
       <div id="goals-paogz" class="goals-section">
         <h2>PAOG-Z 5-Year Goals (2025-2030)</h2>
         <div class="goals-container">
@@ -257,7 +286,7 @@
   <!-- Project Status Dashboard -->
   <div id="project-status" class="screen">
     <div class="header">
-      <i class="fas fa-map logo"></i>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Zambia.svg/320px-Flag_of_Zambia.svg.png" alt="Zambia Flag" class="logo">
       <h1>Project Status</h1>
       <div class="user"><i class="fas fa-user-circle"></i></div>
     </div>
@@ -328,10 +357,10 @@
         <button onclick="filterProjects()">Apply</button>
         <button onclick="searchProjects()">Search</button>
       </div>
-      <button class="toggle-btn" onclick="toggleView('status')">Show List</button>
       <div class="chart-container" id="status-chart">
         <canvas id="statusChart"></canvas>
         <button onclick="exportChart('statusChart')">Export PNG</button>
+        <button class="toggle-btn" onclick="toggleView('status')">Show List</button>
       </div>
       <div class="list-container" id="status-list">
         <ul id="statusList"></ul>
@@ -364,7 +393,7 @@
   <!-- Financial Dashboard -->
   <div id="financial" class="screen">
     <div class="header">
-      <i class="fas fa-map logo"></i>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Zambia.svg/320px-Flag_of_Zambia.svg.png" alt="Zambia Flag" class="logo">
       <h1>Financial Overview</h1>
       <div class="user"><i class="fas fa-user-circle"></i></div>
     </div>
@@ -374,10 +403,10 @@
         <canvas id="gaugeChart" height="100"></canvas>
         <p style="text-align: center; font-size: 18px;" id="gaugeLabel">ZMW 0 / 0</p>
       </div>
-      <button class="toggle-btn" onclick="toggleView('trend')">Show List</button>
       <div class="chart-container" id="trend-chart">
         <canvas id="trendChart"></canvas>
         <button onclick="exportChart('trendChart')">Export PNG</button>
+        <button class="toggle-btn" onclick="toggleView('trend')">Show List</button>
       </div>
       <div class="list-container" id="trend-list">
         <ul id="trendList"></ul>
@@ -471,7 +500,7 @@
   <!-- Community Feedback Interface -->
   <div id="feedback" class="screen">
     <div class="header">
-      <i class="fas fa-map logo"></i>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Zambia.svg/320px-Flag_of_Zambia.svg.png" alt="Zambia Flag" class="logo">
       <h1>Community Feedback</h1>
       <div class="user"><i class="fas fa-user-circle"></i></div>
     </div>
@@ -527,7 +556,6 @@
   <script>
     // Dummy Data with Province and District
     const projects = [
-      // COMPACT Projects
       { projectType: 'COMPACT', id: 'L1', name: 'Kanyama Borehole', province: 'lusaka', district: 'lusaka', sector: 'water', progress: 75, funds: 400000, status: 'ongoing', lat: -15.3875, lng: 28.3228 },
       { projectType: 'COMPACT', id: 'L2', name: 'Kanyama School', province: 'lusaka', district: 'lusaka', sector: 'education', progress: 100, funds: 600000, status: 'completed', lat: -15.3876, lng: 28.3229 },
       { projectType: 'COMPACT', id: 'L3', name: 'Kanyama Clinic', province: 'lusaka', district: 'lusaka', sector: 'health', progress: 30, funds: 300000, status: 'ongoing', lat: -15.3877, lng: 28.3230 },
@@ -537,7 +565,7 @@
       { projectType: 'COMPACT', id: 'L7', name: 'Materos Clinic', province: 'lusaka', district: 'lusaka', sector: 'health', progress: 20, funds: 250000, status: 'delayed', lat: -15.3977, lng: 28.3330 },
       { projectType: 'COMPACT', id: 'L8', name: 'Materos Skills Training', province: 'lusaka', district: 'lusaka', sector: 'skills', progress: 85, funds: 300000, status: 'ongoing', lat: -15.3978, lng: 28.3331 },
       { projectType: 'COMPACT', id: 'C1', name: 'Chilanga Borehole', province: 'lusaka', district: 'chilanga', sector: 'water', progress: 60, funds: 380000, status: 'ongoing', lat: -15.6075, lng: 28.2828 },
-      {هنگ: 'COMPACT', id: 'C2', name: 'Chilanga School', province: 'lusaka', district: 'chilanga', sector: 'education', progress: 95, funds: 550000, status: 'completed', lat: -15.6076, lng: 28.2829 },
+      { projectType: 'COMPACT', id: 'C2', name: 'Chilanga School', province: 'lusaka', district: 'chilanga', sector: 'education', progress: 95, funds: 550000, status: 'completed', lat: -15.6076, lng: 28.2829 },
       { projectType: 'COMPACT', id: 'C3', name: 'Chilanga Clinic', province: 'lusaka', district: 'chilanga', sector: 'health', progress: 40, funds: 320000, status: 'ongoing', lat: -15.6077, lng: 28.2830 },
       { projectType: 'COMPACT', id: 'C4', name: 'Chilanga Skills Training', province: 'lusaka', district: 'chilanga', sector: 'skills', progress: 5, funds: 150000, status: 'delayed', lat: -15.6078, lng: 28.2831 },
       { projectType: 'COMPACT', id: 'C5', name: 'Mapepe Borehole', province: 'lusaka', district: 'chilanga', sector: 'water', progress: 70, funds: 400000, status: 'ongoing', lat: -15.6175, lng: 28.2928 },
@@ -554,7 +582,6 @@
       { projectType: 'COMPACT', id: 'K8', name: 'Shikoswe Skills Training', province: 'lusaka', district: 'kafue', sector: 'skills', progress: 65, funds: 250000, status: 'ongoing', lat: -15.7778, lng: 28.1931 },
       { projectType: 'COMPACT', id: 'M1', name: 'Mongu Borehole', province: 'western', district: 'mongu', sector: 'water', progress: 60, funds: 410000, status: 'ongoing', lat: -15.2484, lng: 23.1274 },
       { projectType: 'COMPACT', id: 'CH1', name: 'Chipata School Renovation', province: 'eastern', district: 'chipata', sector: 'education', progress: 70, funds: 480000, status: 'ongoing', lat: -13.6333, lng: 32.6500 },
-      // PAOG-Z Projects
       { projectType: 'PAOG-Z', id: 'P1', name: 'Katondo Digital Hub', province: 'central', district: 'kabwe central', sector: 'skills', progress: 80, funds: 500000, status: 'ongoing', lat: -14.4400, lng: 28.4500 },
       { projectType: 'PAOG-Z', id: 'P2', name: 'Mukobeko Youth Campaign', province: 'central', district: 'kabwe central', sector: 'education', progress: 60, funds: 300000, status: 'ongoing', lat: -14.4500, lng: 28.4600 },
       { projectType: 'PAOG-Z', id: 'P3', name: 'Chibombo Mentorship Program', province: 'central', district: 'chibombo', sector: 'skills', progress: 40, funds: 450000, status: 'delayed', lat: -14.6500, lng: 28.0700 },
@@ -563,13 +590,11 @@
       { projectType: 'PAOG-Z', id: 'P6', name: 'Chipulukusu Skills Training', province: 'copperbelt', district: 'ndola central', sector: 'skills', progress: 65, funds: 380000, status: 'ongoing', lat: -12.9800, lng: 28.6600 },
       { projectType: 'PAOG-Z', id: 'P7', name: 'Nkana East Digital Hub', province: 'copperbelt', district: 'nkana', sector: 'skills', progress: 90, funds: 520000, status: 'completed', lat: -12.8000, lng: 28.2100 },
       { projectType: 'PAOG-Z', id: 'P8', name: 'Nkana West Youth Workshop', province: 'copperbelt', district: 'nkana', sector: 'education', progress: 45, funds: 320000, status: 'ongoing', lat: -12.8100, lng: 28.2200 },
-      // KUPULA Projects
       { projectType: 'KUPULA', id: 'KUP1', name: 'Kapiri Solar Irrigation', province: 'central', district: 'kapiri mposhi', sector: 'agriculture', progress: 70, funds: 600000, status: 'ongoing', lat: -13.9700, lng: 28.6700 },
       { projectType: 'KUPULA', id: 'KUP2', name: 'Lukanga Organic Farming', province: 'central', district: 'kapiri mposhi', sector: 'agriculture', progress: 50, funds: 450000, status: 'ongoing', lat: -13.9800, lng: 28.6800 },
       { projectType: 'KUPULA', id: 'KUP3', name: 'Chibombo Fish Farming', province: 'central', district: 'chibombo', sector: 'agriculture', progress: 30, funds: 400000, status: 'delayed', lat: -14.6501, lng: 28.0701 },
       { projectType: 'KUPULA', id: 'KUP4', name: 'Kafue Urban Farming', province: 'lusaka', district: 'kafue', sector: 'agriculture', progress: 85, funds: 500000, status: 'ongoing', lat: -15.7679, lng: 28.1832 },
       { projectType: 'KUPULA', id: 'S1', name: 'Shangombo Fish Farming', province: 'western', district: 'shangombo', sector: 'agriculture', progress: 45, funds: 380000, status: 'ongoing', lat: -16.3167, lng: 22.0667 },
-      // Other Projects
       { projectType: 'Other Projects', id: 'O1', name: 'Livingstone Market', province: 'southern', district: 'livingstone', sector: 'community', progress: 60, funds: 550000, status: 'ongoing', lat: -17.8500, lng: 25.8600 },
       { projectType: 'Other Projects', id: 'O2', name: 'Dambwa Community Center', province: 'southern', district: 'livingstone', sector: 'community', progress: 80, funds: 480000, status: 'ongoing', lat: -17.8600, lng: 25.8700 },
       { projectType: 'Other Projects', id: 'O3', name: 'Kanyama Library', province: 'lusaka', district: 'lusaka', sector: 'community', progress: 40, funds: 350000, status: 'ongoing', lat: -15.3879, lng: 28.3232 },
@@ -622,12 +647,26 @@
       });
     });
 
+    // Footer Scroll Behavior
+    let lastScrollTop = 0;
+    window.addEventListener('scroll', () => {
+      const footer = document.querySelector('.footer');
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > lastScrollTop) {
+        // Scrolling down
+        footer.classList.add('hidden');
+      } else {
+        // Scrolling up
+        footer.classList.remove('hidden');
+      }
+      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    });
+
     // Overview Chart
     function updateOverview() {
       const projectType = document.getElementById('overview-project-type').value;
       let filteredProjects = projectType === 'all' ? projects : projects.filter(p => p.projectType === projectType);
 
-      // Map projectType to the correct goals section ID
       const goalsIdMap = {
         'PAOG-Z': 'goals-paogz',
         'COMPACT': 'goals-compact',
@@ -635,7 +674,6 @@
         'Other Projects': 'goals-other'
       };
 
-      // Show/Hide Goals Section based on Project Type
       document.querySelectorAll('.goals-section').forEach(section => section.classList.remove('active'));
       if (projectType !== 'all') {
         const goalsSectionId = goalsIdMap[projectType];
@@ -662,14 +700,13 @@
       ).join('');
 
       const fundsAllocated = filteredProjects.reduce((sum, p) => sum + p.funds, 0);
-      const fundsDisbursed = fundsAllocated * 0.7; // Simulate 70% disbursement
+      const fundsDisbursed = fundsAllocated * 0.7;
       const fundsRemaining = fundsAllocated - fundsDisbursed;
       document.getElementById('totalProjects').textContent = filteredProjects.length;
       document.getElementById('fundsAllocated').textContent = `ZMW ${fundsAllocated.toLocaleString()}`;
       document.getElementById('fundsDisbursed').textContent = `ZMW ${fundsDisbursed.toLocaleString()}`;
       document.getElementById('fundsRemaining').textContent = `ZMW ${fundsRemaining.toLocaleString()}`;
 
-      // Update Map
       map.eachLayer(layer => {
         if (layer instanceof L.Marker) map.removeLayer(layer);
       });
@@ -691,14 +728,12 @@
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Map
-    const map = L.map('map').setView([-15.4167, 28.2833], 6); // Center of Zambia
+    const map = L.map('map').setView([-15.4167, 28.2833], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Project Status Chart
     function updateStatusChart(filteredProjects) {
       const statusCounts = { completed: 0, ongoing: 0, delayed: 0 };
       filteredProjects.forEach(p => statusCounts[p.status]++);
@@ -723,13 +758,12 @@
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Financial Gauge and Trend
     function updateFinancialDashboard() {
       const projectType = document.getElementById('overview-project-type').value;
       let filteredProjects = projectType === 'all' ? projects : projects.filter(p => p.projectType === projectType);
 
       const totalFunds = filteredProjects.reduce((sum, p) => sum + p.funds, 0);
-      const disbursedFunds = totalFunds * 0.7; // Simulate 70% disbursement
+      const disbursedFunds = totalFunds * 0.7;
       gaugeChart.data.datasets[0].data = [disbursedFunds, totalFunds - disbursedFunds];
       gaugeChart.update();
       document.getElementById('financialFundsAllocated').textContent = `ZMW ${totalFunds.toLocaleString()}`;
@@ -778,7 +812,6 @@
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Form Validation
     function validateForm() {
       const inputs = document.querySelectorAll('#proposal input[required], #proposal select[required], #proposal textarea[required]');
       const submitBtn = document.getElementById('submitProposal');
@@ -788,7 +821,6 @@
       input.addEventListener('input', validateForm);
     });
 
-    // Offline Simulation
     function checkOffline() {
       const syncBtn = document.getElementById('sync');
       if (!navigator.onLine) {
@@ -803,7 +835,6 @@
     window.addEventListener('offline', checkOffline);
     checkOffline();
 
-    // Filter and Search
     function filterProjects() {
       const level = document.getElementById('level').value;
       const province = document.getElementById('province').value;
@@ -866,19 +897,16 @@
       const constituencySelect = document.getElementById('constituency');
       const wardSelect = document.getElementById('ward');
 
-      // Hide all location-specific filters by default
       provinceSelect.style.display = 'none';
       districtSelect.style.display = 'none';
       constituencySelect.style.display = 'none';
       wardSelect.style.display = 'none';
 
-      // Reset values to 'all' when changing levels
       provinceSelect.value = 'all';
       districtSelect.value = 'all';
       constituencySelect.value = 'in-dev';
       wardSelect.value = 'in-dev';
 
-      // Show the appropriate filter based on the selected level
       if (level === 'province') {
         provinceSelect.style.display = 'block';
       } else if (level === 'district') {
@@ -900,11 +928,10 @@
         ).join('');
     }
 
-    // Toggle Chart/List
     function toggleView(id) {
       const chart = document.getElementById(`${id}-chart`);
       const list = document.getElementById(`${id}-list`);
-      const btn = chart.parentElement.querySelector('.toggle-btn');
+      const btn = chart.querySelector('.toggle-btn');
       if (chart.style.display !== 'none') {
         chart.style.display = 'none';
         list.style.display = 'block';
@@ -916,7 +943,6 @@
       }
     }
 
-    // Placeholder Functions
     function exportChart(chartId) {
       const canvas = document.getElementById(chartId);
       const link = document.createElement('a');
@@ -942,7 +968,6 @@
       console.log(`Language changed to: ${lang}`);
     }
 
-    // Initialize
     updateOverview();
     updateFilters();
     updateProjectDropdowns();
