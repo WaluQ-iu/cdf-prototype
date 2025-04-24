@@ -1,4 +1,15 @@
 <!DOCTYPE html>
+<!-- 
+Frontend (Next.js + Tailwind CSS + Chart.js + Leaflet.js + Framer Motion): Next.js builds the UI, 
+Tailwind styles it, Chart.js and Leaflet.js handle visualizations (charts and maps), 
+and Framer Motion adds animations. React Query manages data fetching.
+Backend (Node.js + Express.js + Socket.IO): Node.js and Express.js serve the API, 
+and Socket.IO handles real-time updates.
+Database (PostgreSQL + Redis): PostgreSQL stores the data, and Redis caches it for faster access.
+Security (HTTPS + JWT + Helmet.js): HTTPS encrypts traffic, JWT secures authentication, and Helmet.js protects the backend.
+Performance (Vite + Cloudflare): Vite optimizes the build process, and Cloudflare enhances global performance and security.
+Mobile (PWA + Tailwind): PWA ensures offline access, and Tailwind ensures responsiveness.
+Deployment (Vercel + Docker): Vercel deploys the frontend, and Docker containerizes the backend for consistency.-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -49,7 +60,7 @@
     .form-section { margin-bottom: 10px; }
     .form-section label { display: block; font-size: 14px; margin-bottom: 5px; }
     .form-section input, .form-section select, .form-section textarea { width: 100%; padding: 8px; font-size: 16px; border: 1px solid #DEE2E6; border-radius: 5px; }
-    .form-section button { background: #28A745; color: white; padding: 10px; font-size: 16px; border: none; border-radius: 5px; width: 100%; }
+    .form-section button { background: #a72865; color: white; padding: 10px; font-size: 16px; border: none; border-radius: 5px; width: 100%; }
     .form-section button:disabled { background: #6C757D; }
     .footer { 
       background: #F8F9FA; 
@@ -168,8 +179,10 @@
         <select onchange="changeLanguage(this.value)">
           <option value="en">EN</option>
           <option value="bem">Bemba</option>
+          <option value="loz">Lozi</option>
           <option value="nya">Nyanja</option>
           <option value="ton">Tonga</option>
+
         </select>
       </div>
     </div>
@@ -216,9 +229,9 @@
           <div class="goal-card" style="--progress: 40;" data-project-id="P3">
             <i class="fas fa-briefcase"></i>
             <i class="fas fa-exclamation-triangle alert-icon" onclick="showProjectDetails('P3')"></i>
-            <h3>Chibombo Mentorship</h3>
+            <h3>Grassroots Mentorship and Development</h3>
             <div class="progress-circle" data-progress="40"></div>
-            <p>Support 5,000 entrepreneurs<br>Progress: 2,000 supported</p>
+            <p>Train 5,000 Gen-Z Leaders<br>Progress: 2,000 Trained</p>
           </div>
           <div class="goal-card" style="--progress: 50;">
             <i class="fas fa-users"></i>
@@ -300,7 +313,7 @@
             <i class="fas fa-exclamation-triangle alert-icon" onclick="showProjectDetails('P3')"></i>
             <h3>Chibombo Mentorship</h3>
             <div class="progress-circle" data-progress="40"></div>
-            <p>Support 5,000 entrepreneurs<br>Progress: 2,000 supported</p>
+            <p>Train 5,000 Gen-Z Leaders<br>Progress: 2,000 Trained</p>
           </div>
           <div class="goal-card" style="--progress: 50;">
             <i class="fas fa-users"></i>
@@ -661,6 +674,32 @@
     </div>
   </div>
 
+    <!-- Future modules-->
+    <div id="fmodules" class="screen">
+        <div class="header">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Zambia.svg/320px-Flag_of_Zambia.svg.png" alt="Zambia Flag" class="logo">
+          <h1>Future Modules</h1>
+          <div class="user"><i class="fas fa-user-circle"></i></div>
+        </div>
+        <div class="content">
+          <div class="form-section">
+            <label>FutureDevs</label>
+            <select id="FutureModules" required>
+              <option value="all">All Projects</option>
+            </select>
+          </div>
+    
+        </div>
+        <div class="footer">
+          <a href="#overview"><i class="fas fa-home"></i> Overview</a>
+          <a href="#project-status"><i class="fas fa-tasks"></i> Projects</a>
+          <a href="#financial"><i class="fas fa-wallet"></i> Financial</a>
+          <a href="#proposal"><i class="fas fa-file-alt"></i> Proposal</a>
+          <a href="#feedback" class="active"><i class="fas fa-comment"></i> Feedback</a>
+          <p>Contact: +260 123 456 789</p>
+        </div>
+      </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -694,7 +733,7 @@
       { projectType: 'COMPACT', id: 'CH1', name: 'Chipata School Renovation', province: 'eastern', district: 'chipata', sector: 'education', progress: 70, funds: 480000, status: 'ongoing', lat: -13.6333, lng: 32.6500 },
       { projectType: 'PAOG-Z', id: 'P1', name: 'Katondo Digital Hub', province: 'central', district: 'kabwe central', sector: 'skills', progress: 80, funds: 500000, status: 'ongoing', lat: -14.4400, lng: 28.4500 },
       { projectType: 'PAOG-Z', id: 'P2', name: 'Mukobeko Youth Campaign', province: 'central', district: 'kabwe central', sector: 'education', progress: 60, funds: 300000, status: 'ongoing', lat: -14.4500, lng: 28.4600 },
-      { projectType: 'PAOG-Z', id: 'P3', name: 'Chibombo Mentorship Program', province: 'central', district: 'chibombo', sector: 'skills', progress: 40, funds: 450000, status: 'delayed', lat: -14.6500, lng: 28.0700 },
+      { projectType: 'PAOG-Z', id: 'P3', name: 'Chibombo Grassroots development.', province: 'central', district: 'chibombo', sector: 'skills', progress: 40, funds: 450000, status: 'delayed', lat: -14.6500, lng: 28.0700 },
       { projectType: 'PAOG-Z', id: 'P4', name: 'Mungule Digital Literacy', province: 'central', district: 'chibombo', sector: 'education', progress: 70, funds: 400000, status: 'ongoing', lat: -14.6600, lng: 28.0800 },
       { projectType: 'PAOG-Z', id: 'P5', name: 'Ndeke Youth Empowerment', province: 'copperbelt', district: 'ndola central', sector: 'skills', progress: 55, funds: 350000, status: 'ongoing', lat: -12.9600, lng: 28.6400 },
       { projectType: 'PAOG-Z', id: 'P6', name: 'Chipulukusu Skills Training', province: 'copperbelt', district: 'ndola central', sector: 'skills', progress: 65, funds: 380000, status: 'ongoing', lat: -12.9800, lng: 28.6600 },
